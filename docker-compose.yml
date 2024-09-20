@@ -1,0 +1,62 @@
+version: "3.3"
+
+networks:
+  net:
+    driver: bridge
+
+services:
+  # database
+  postgres:
+    image: postgres:15.1
+    environment:
+      POSTGRES_DB: jwt
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    container_name: 'postgres-container'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jwt"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    networks:
+      - net
+
+  # service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    container_name: 'jwt-container'
+    restart: unless-stopped
+    hostname: server
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres:5432/jwt?sslmode=disable
+      HTTP_PORT: ":8080"
+      SECRET_KEY: "gJp5K#L$m8n3H@jR&tT*qX7pZ!bD%wFy"
+    ports:
+      - 8080:8080
+    command: ./app
+    depends_on:
+      - postgres
+    networks:
+      - net
+
+volumes:
+  pgdata:
