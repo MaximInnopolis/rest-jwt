@@ -38,3 +38,12 @@ down-service:
 # Migration
 migrate:
 	./migration.sh up
+
+
+# Mock generation
+.PHONY: generate-mock
+generate-mock:
+	PATH="$(LOCAL_BIN):$$PATH" go generate -x -run=mockgen ./...
+
+test:
+	go test ./...

@@ -53,7 +53,7 @@ func (as *AuthService) GenerateToken(userID, clientIP string) (string, string, e
 
 func (as *AuthService) RefreshToken(accessToken, refreshToken, clientIP string) (string, string, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &models.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return as.jwtKey, nil
+		return []byte(as.jwtKey), nil
 	})
 	if err != nil {
 		return "", "", err
@@ -92,7 +92,7 @@ func (as *AuthService) createAccessToken(userID, clientIP string) (string, error
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	return token.SignedString(as.jwtKey)
+	return token.SignedString([]byte(as.jwtKey))
 }
 
 func createRefreshToken() (string, error) {

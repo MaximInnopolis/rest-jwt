@@ -13,7 +13,7 @@ RUN go mod download
 # copy all files
 COPY . ./
 # build binary
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/app -v ./cmd
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/app -v ./cmd
 
 ## Deploy
 FROM alpine:latest AS final
@@ -24,6 +24,8 @@ COPY --from=build /bin/app /app
 
 # Install bash for command execution
 RUN apk add --no-cache bash
+
+RUN chmod +x /app
 
 EXPOSE 8080
 EXPOSE 8090
